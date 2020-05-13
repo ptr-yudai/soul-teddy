@@ -1,0 +1,37 @@
+TOOL_ROOTS := soul-teddy
+APP_ROOTS  := soul-teddy
+TEST_ROOTS := soul-teddy
+
+SRC_SUFFIX := .cpp
+SRCDIR  := ./src/
+OBJDIR  := ./obj/
+DISTDIR := ./dist/
+
+SRC_FILES := $(wildcard $(SRCDIR)*$(SRC_SUFFIX))
+OBJ_FILES := $(patsubst $(SRCDIR)%$(SRC_SUFFIX),$(OBJDIR)%$(OBJ_SUFFIX),$(SRC_FILES))
+
+all: $(DISTDIR) $(OBJDIR) $(DISTDIR)$(TOOL_ROOTS)$(PINTOOL_SUFFIX)
+	@true # kasu :)
+
+run:
+ifdef TESTCASE
+	@echo '******** BEGIN  TEST ********'
+	@echo '# TESTCASE = $(TESTCASE)'
+	$(PIN_ROOT)/pin -t $(DISTDIR)$(TOOL_ROOTS)$(PINTOOL_SUFFIX) -- $(TESTCASE)
+	@echo '******** END OF TEST ********'
+else
+	@echo '[-] Error: No testcase given'
+	@echo '[-] $$ make run TESTCASE=/path/to/target/binary'
+endif
+
+$(DISTDIR)$(TOOL_ROOTS)$(PINTOOL_SUFFIX): $(OBJ_FILES)
+	$(LINKER) $(TOOL_LDFLAGS_NOOPT) $(LINK_EXE)$@ $(^:%.h=) $(TOOL_LPATHS) $(TOOL_LIBS)
+
+$(OBJDIR)%$(OBJ_SUFFIX): $(SRCDIR)%$(SRC_SUFFIX)
+	$(CXX) $(TOOL_CXXFLAGS_NOOPT) $(COMP_OBJ)$@ $<
+
+$(OBJDIR):
+	mkdir -p $(OBJDIR)
+
+$(DISTDIR):
+	mkdir -p $(DISTDIR)
