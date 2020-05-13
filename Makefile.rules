@@ -1,12 +1,28 @@
+###################
+# Tool definition #
+###################
 TOOL_ROOTS := soul-teddy
 APP_ROOTS  := soul-teddy
 TEST_ROOTS := soul-teddy
 
 SRC_SUFFIX := .cpp
-SRCDIR  := ./src/
-OBJDIR  := ./obj/
-DISTDIR := ./dist/
+SRCDIR  := src/
+OBJDIR  := obj/
+DISTDIR := dist/
 
+#######################
+# libdft64 definition #
+#######################
+LIBDFT_INC_PATH = $(realpath $(DFT_ROOT)/src/)
+LIBDFT_PATH = $(realpath $(DFT_ROOT)/src/obj-intel64/)
+
+LOGGING_FLAGS = -DNO_PINTOOL_LOG
+TOOL_CXXFLAGS = $(TOOL_CXXFLAGS_NOOPT) $(LOGGING_FLAGS) -I$(LIBDFT_INC_PATH) -L$(LIBDFT_PATH)
+TOOL_LIBS += -L$(LIBDFT_PATH) -ldft
+
+#####################
+# Object definition #
+#####################
 SRC_FILES := $(wildcard $(SRCDIR)*$(SRC_SUFFIX))
 OBJ_FILES := $(patsubst $(SRCDIR)%$(SRC_SUFFIX),$(OBJDIR)%$(OBJ_SUFFIX),$(SRC_FILES))
 
@@ -28,7 +44,7 @@ $(DISTDIR)$(TOOL_ROOTS)$(PINTOOL_SUFFIX): $(OBJ_FILES)
 	$(LINKER) $(TOOL_LDFLAGS_NOOPT) $(LINK_EXE)$@ $(^:%.h=) $(TOOL_LPATHS) $(TOOL_LIBS)
 
 $(OBJDIR)%$(OBJ_SUFFIX): $(SRCDIR)%$(SRC_SUFFIX)
-	$(CXX) $(TOOL_CXXFLAGS_NOOPT) $(COMP_OBJ)$@ $<
+	$(CXX) $(TOOL_CXXFLAGS) $(COMP_OBJ)$@ $<
 
 $(OBJDIR):
 	mkdir -p $(OBJDIR)
