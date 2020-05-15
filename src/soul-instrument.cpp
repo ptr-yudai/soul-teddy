@@ -2,11 +2,18 @@
 #include "soul-hook.hpp"
 
 /**
- * Instrument all instructions
+ * Instrument some instructions
  */
-VOID ins_instrument(INS ins, VOID *arg)
+void asm_instrument()
 {
-  INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)ins_hook,
-                 IARG_INST_PTR,
-                 IARG_END);
+  ins_set_pre(&ins_desc[XED_ICLASS_RET_NEAR], dta_instrument_ret);
+}
+
+/**
+ * Instrument syscalls
+ */
+void sys_instrument()
+{
+  // [TODO] Add more system calls
+  syscall_set_post(&syscall_desc[__NR_read], post_read_hook);
 }

@@ -1,3 +1,5 @@
 #include <pin.H>
+#include <syscall_desc.h>
 
-VOID ins_instrument(INS, VOID*);
+void asm_instrument();
+void sys_instrument();

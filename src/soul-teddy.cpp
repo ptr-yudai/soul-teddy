@@ -21,7 +21,10 @@ int main(int argc, char **argv)
   }
 
   // Instrument instructions
-  INS_AddInstrumentFunction(ins_instrument, 0);
+  asm_instrument();
+
+  // Instrument system calls
+  sys_instrument();
 
   // Run target binary
   PIN_StartProgram();
