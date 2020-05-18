@@ -7,6 +7,7 @@
 void asm_instrument()
 {
   ins_set_post(&ins_desc[XED_ICLASS_RET_NEAR], dta_instrument_ret);
+  ins_set_post(&ins_desc[XED_ICLASS_RET_NEAR], dta_instrument_ret);
 }
 
 /**

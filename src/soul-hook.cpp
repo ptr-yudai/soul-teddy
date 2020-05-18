@@ -11,7 +11,7 @@ std::list<int> open_fds;
  */
 void dta_instrument_ret(INS ins)
 {
-  INS_InsertIfCall(ins, IPOINT_BEFORE, (AFUNPTR)assert_mem,
+  INS_InsertIfCall(ins, IPOINT_BEFORE, (AFUNPTR)assert_clean_ptr,
                    IARG_FAST_ANALYSIS_CALL,
                    IARG_MEMORYREAD_EA,
                    IARG_BRANCH_TARGET_ADDR,

@@ -7,6 +7,6 @@
 #define INK_TAINT   0x01
 #define INK_POINTER 0x02
 
-#define CLEAR(tag)   (tag == INK_CLEAR)
-#define TAINTED(tag) ((tag & INK_TAINT) == INK_TAINT)
-#define POINTER(tag) ((tag & INK_POINTER) == INK_POINTER)
+#define CLEAR(tag)   ((tag) == INK_CLEAR)
+#define TAINTED(tag) (((tag) & INK_TAINT) == INK_TAINT)
+#define POINTER(tag) (((tag) & INK_POINTER) == INK_POINTER)
