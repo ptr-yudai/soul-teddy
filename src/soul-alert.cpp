@@ -6,7 +6,8 @@
  */
 ADDRINT PIN_FAST_ANALYSIS_CALL assert_mem(ADDRINT paddr, ADDRINT taddr)
 {
-  return TAINTED(tagmap_getb(paddr)) && !POINTER(tagmap_getb(paddr));
+  return TAINTED(tagmap_getb(MEM_ALIGN(paddr)))
+    && !POINTER(tagmap_getb(MEM_ALIGN(paddr)));
 }
 
 /**
@@ -14,5 +15,5 @@ ADDRINT PIN_FAST_ANALYSIS_CALL assert_mem(ADDRINT paddr, ADDRINT taddr)
  */
 void PIN_FAST_ANALYSIS_CALL alert(ADDRINT src, ADDRINT dst)
 {
-  std::cerr << "[!] ALERT: @" << src << " --> @" << dst << std::endl;
+  std::cerr << std::hex << "[!] ALERT: @" << src << " --> @" << dst << std::endl;
 }
