@@ -1,5 +1,5 @@
 /**
- * sample01
+ * sample01: Stack Overflow
  */
 #include <stdio.h>
 
