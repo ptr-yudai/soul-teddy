@@ -8,12 +8,11 @@ void func1(long a) { printf("[+] func1(%ld);\n", a); }
 void func2(long a) { printf("[+] func2(%ld);\n", a); }
 
 void (*f[])(long) = {func1, func2};
+long n, a;
 
 int main(int argc, char **argv, char **envp) {
-  int n = 0;
-  long a = 0;
   printf("Enter 0 or 1: ");
-  scanf("%d", &n);
+  scanf("%ld", &n);
   printf("Argument: ");
   scanf("%ld", &a);
   f[n](a);

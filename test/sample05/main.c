@@ -5,16 +5,19 @@
 #include <stdio.h>
 #include <unistd.h>
 
-void vuln(int *pn) {
-  char buf[0x80];
-  int s = read(0, buf, 0x80);
-  buf[s] = '\0';
+void internal_vuln(int *pn) {
+  char buf[0x100];
+  buf[read(0, buf, 0x100)] = '\0';
   printf("[+] str: %s", buf);
   *pn = atoi(buf);
 }
 
-int main(int argc, char **argv, char **envp) {
+void vuln() {
   int n;
-  vuln(&n);
+  internal_vuln(&n);
   printf("[+] int: %d\n", n);
+}
+
+int main(int argc, char **argv, char **envp) {
+  vuln();
 }

@@ -3,9 +3,13 @@
  */
 #include <stdio.h>
 
-int main(int argc, char **argv, char **envp) {
+void vuln() {
   char buf[0x10];
   gets(buf);
   puts(buf);
+}
+
+int main(int argc, char **argv, char **envp) {
+  vuln();
   return 0;
 }
