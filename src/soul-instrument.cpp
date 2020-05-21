@@ -14,6 +14,10 @@ void asm_instrument()
   ins_set_post(&ins_desc[XED_ICLASS_JMP],
                dta_instrument_jmp_call);
 
+  /* instrument data transfer */
+  ins_set_post(&ins_desc[XED_ICLASS_MOV],
+               dta_instrument_mov);
+
   /* instrument P fountain */
   ins_set_pre(&ins_desc[XED_ICLASS_LEA],
               dta_instrument_lea);

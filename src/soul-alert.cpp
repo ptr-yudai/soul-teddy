@@ -5,7 +5,7 @@
  * 64-bit memory assertion (taint/dft-sink)
  */
 ADDRINT PIN_FAST_ANALYSIS_CALL
-assert_mem_clean_ptr(ADDRINT paddr, ADDRINT taddr)
+assert_mem_clean_ptr(ADDRINT paddr)
 {
   return TAINTED(tagmap_getb(MEM_ALIGN(paddr)))
     && !POINTER(tagmap_getb(MEM_ALIGN(paddr)));
@@ -15,7 +15,7 @@ assert_mem_clean_ptr(ADDRINT paddr, ADDRINT taddr)
  * 64-bit memory assertion (instruction fetch)
  */
 ADDRINT PIN_FAST_ANALYSIS_CALL
-assert_mem_clean(ADDRINT paddr, ADDRINT taddr)
+assert_mem_clean(ADDRINT paddr)
 {
   return TAINTED(tagmap_getb(MEM_ALIGN(paddr)));
 }
@@ -34,7 +34,11 @@ assert_reg_clean_ptr(size_t reg_id, ADDRINT addr)
 /**
  * ALERT
  */
-void PIN_FAST_ANALYSIS_CALL alert(ADDRINT src, ADDRINT dst)
+void PIN_FAST_ANALYSIS_CALL alert_x(ADDRINT rip, ADDRINT dst)
 {
-  std::cerr << std::hex << "[!] ALERT: @" << src << " --> @" << dst << std::endl;
+  std::cerr << std::hex << "[!] ALERT: @" << rip << " --> @" << dst << std::endl;
+}
+void PIN_FAST_ANALYSIS_CALL alert_rw(ADDRINT rip, ADDRINT addr)
+{
+  std::cerr << std::hex << "[!] ALERT: @" << rip << " <=> @" << addr << std::endl;
 }

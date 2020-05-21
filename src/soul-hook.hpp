@@ -16,7 +16,9 @@ extern syscall_desc_t syscall_desc[SYSCALL_MAX];
 
 void dta_instrument_jmp_call(INS);
 void dta_instrument_ret(INS);
+void dta_instrument_mov(INS);
 void dta_instrument_lea(INS);
+
 void post_mmap_hook(unsigned int, syscall_ctx_t*);
 void post_munmap_hook(unsigned int, syscall_ctx_t*);
 void post_open_hook(unsigned int, syscall_ctx_t*);

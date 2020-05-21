@@ -25,9 +25,8 @@ void dta_instrument_jmp_call(INS ins)
   INS_InsertIfCall(ins, IPOINT_BEFORE, (AFUNPTR)assert_mem_clean_ptr,
                    IARG_FAST_ANALYSIS_CALL,
                    IARG_MEMORYREAD_EA,
-                   IARG_BRANCH_TARGET_ADDR,
                    IARG_END);
-  INS_InsertThenCall(ins, IPOINT_BEFORE, (AFUNPTR)alert,
+  INS_InsertThenCall(ins, IPOINT_BEFORE, (AFUNPTR)alert_x,
                      IARG_FAST_ANALYSIS_CALL,
                      IARG_INST_PTR,
                      IARG_BRANCH_TARGET_ADDR,
@@ -42,13 +41,46 @@ void dta_instrument_ret(INS ins)
   INS_InsertIfCall(ins, IPOINT_BEFORE, (AFUNPTR)assert_mem_clean_ptr,
                    IARG_FAST_ANALYSIS_CALL,
                    IARG_MEMORYREAD_EA,
-                   IARG_BRANCH_TARGET_ADDR,
                    IARG_END);
-  INS_InsertThenCall(ins, IPOINT_BEFORE, (AFUNPTR)alert,
+  INS_InsertThenCall(ins, IPOINT_BEFORE, (AFUNPTR)alert_x,
                      IARG_FAST_ANALYSIS_CALL,
                      IARG_INST_PTR,
                      IARG_BRANCH_TARGET_ADDR,
                      IARG_END);
+}
+
+/**
+ * Instrument mov
+ */
+void dta_instrument_mov(INS ins)
+{
+  if (INS_IsMemoryRead(ins)) {
+
+    /* read from memory */
+    INS_InsertIfCall(ins, IPOINT_BEFORE, (AFUNPTR)assert_mem_clean_ptr,
+                     IARG_FAST_ANALYSIS_CALL,
+                     IARG_MEMORYREAD_EA,
+                     IARG_END);
+    INS_InsertThenCall(ins, IPOINT_BEFORE, (AFUNPTR)alert_rw,
+                       IARG_FAST_ANALYSIS_CALL,
+                       IARG_INST_PTR,
+                       IARG_MEMORYREAD_EA,
+                       IARG_END);
+
+  } else if (INS_IsMemoryWrite(ins)) {
+
+    /* write to memory */
+    INS_InsertIfCall(ins, IPOINT_BEFORE, (AFUNPTR)assert_mem_clean_ptr,
+                     IARG_FAST_ANALYSIS_CALL,
+                     IARG_MEMORYWRITE_EA,
+                     IARG_END);
+    INS_InsertThenCall(ins, IPOINT_BEFORE, (AFUNPTR)alert_rw,
+                       IARG_FAST_ANALYSIS_CALL,
+                       IARG_INST_PTR,
+                       IARG_MEMORYWRITE_EA,
+                       IARG_END);
+
+  }
 }
 
 /**
