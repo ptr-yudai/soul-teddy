@@ -1,5 +1,10 @@
 /**
  * sample03: BSS Overflow (OOB)
+ *
+ * CHECK
+ * - `call` (memory) is properly instrumented
+ * - User input from `read` syscall is properly tainted
+ * - GOT is in range of taint targets
  */
 #include <stdlib.h>
 #include <stdio.h>

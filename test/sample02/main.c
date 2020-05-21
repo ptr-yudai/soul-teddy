@@ -1,5 +1,10 @@
 /**
  * sample02: Stack Overflow (OOB)
+ *
+ * CHECK
+ * - `ret` is properly instrumented
+ * - User input from `read` syscall is properly tainted
+ * - Indexing access to an array is properly considered as pointer access
  */
 #include <stdio.h>
 

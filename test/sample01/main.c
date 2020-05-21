@@ -1,5 +1,9 @@
 /**
  * sample01: Stack Overflow
+ * 
+ * CHECK
+ * - `ret` is properly instrumented
+ * - User input from `read` syscall is properly tainted
  */
 #include <stdio.h>
 

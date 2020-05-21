@@ -1,5 +1,9 @@
 /**
  * sample04: vtable OOB
+ *
+ * CHECK
+ * - `mov` is properly instrumented
+ * - User input from `read` syscall is properly tainted
  */
 #include <stdlib.h>
 #include <stdio.h>
