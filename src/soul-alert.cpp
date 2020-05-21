@@ -4,7 +4,8 @@
 /**
  * 64-bit memory assertion (taint/dft-sink)
  */
-ADDRINT PIN_FAST_ANALYSIS_CALL assert_clean_ptr(ADDRINT paddr, ADDRINT taddr)
+ADDRINT PIN_FAST_ANALYSIS_CALL
+assert_mem_clean_ptr(ADDRINT paddr, ADDRINT taddr)
 {
   return TAINTED(tagmap_getb(MEM_ALIGN(paddr)))
     && !POINTER(tagmap_getb(MEM_ALIGN(paddr)));
@@ -13,9 +14,21 @@ ADDRINT PIN_FAST_ANALYSIS_CALL assert_clean_ptr(ADDRINT paddr, ADDRINT taddr)
 /**
  * 64-bit memory assertion (instruction fetch)
  */
-ADDRINT PIN_FAST_ANALYSIS_CALL assert_clean(ADDRINT paddr, ADDRINT taddr)
+ADDRINT PIN_FAST_ANALYSIS_CALL
+assert_mem_clean(ADDRINT paddr, ADDRINT taddr)
 {
   return TAINTED(tagmap_getb(MEM_ALIGN(paddr)));
+}
+
+/**
+ * 64-bit register assertion (taint/dft-sink)
+ */
+ADDRINT PIN_FAST_ANALYSIS_CALL
+assert_reg_clean_ptr(size_t reg_id, ADDRINT addr)
+{
+  // [TODO] check thread info
+  return TAINTED(tagmap_getb(MEM_ALIGN(addr)))
+    && !POINTER(tagmap_getb(MEM_ALIGN(addr)));
 }
 
 /**

@@ -5,13 +5,54 @@
 #include "soul-alert.hpp"
 
 std::list<int> open_fds;
+REG thread_ctx_ptr;
 
 /**
- * Instrument alert
+ * Instrument jmp/call
+ */
+void dta_instrument_jmp_call(INS ins)
+{
+  REG reg;
+
+  if (INS_IsDirectBranch(ins) || INS_IsDirectCall(ins))
+    return; // branch address is fixed (impossible to be tainted)
+
+  if (INS_OperandIsReg(ins, 0)) { // call via register
+
+    reg = INS_OperandReg(ins, 0);
+    INS_InsertIfCall(ins, IPOINT_BEFORE, (AFUNPTR)assert_reg_clean_ptr,
+                     IARG_FAST_ANALYSIS_CALL,
+                     IARG_UINT32, REG_INDX(reg),
+                     IARG_REG_VALUE, reg,
+                     IARG_END);
+
+  } else { // call via memory
+
+    if (INS_MemoryReadSize(ins) == QWORD_LEN) {
+      INS_InsertIfCall(ins, IPOINT_BEFORE, (AFUNPTR)assert_mem_clean_ptr,
+                       IARG_FAST_ANALYSIS_CALL,
+                       IARG_MEMORYREAD_EA,
+                       IARG_BRANCH_TARGET_ADDR,
+                       IARG_END);
+    } else {
+      return; // :thinking_face: path (unreachable)
+    }
+
+  }
+
+  INS_InsertThenCall(ins, IPOINT_BEFORE, (AFUNPTR)alert,
+                     IARG_FAST_ANALYSIS_CALL,
+                     IARG_INST_PTR,
+                     IARG_BRANCH_TARGET_ADDR,
+                     IARG_END);
+}
+
+/**
+ * Instrument ret
  */
 void dta_instrument_ret(INS ins)
 {
-  INS_InsertIfCall(ins, IPOINT_BEFORE, (AFUNPTR)assert_clean_ptr,
+  INS_InsertIfCall(ins, IPOINT_BEFORE, (AFUNPTR)assert_mem_clean_ptr,
                    IARG_FAST_ANALYSIS_CALL,
                    IARG_MEMORYREAD_EA,
                    IARG_BRANCH_TARGET_ADDR,
@@ -21,6 +62,40 @@ void dta_instrument_ret(INS ins)
                      IARG_INST_PTR,
                      IARG_BRANCH_TARGET_ADDR,
                      IARG_END);
+}
+
+/**
+ * Instrument lea
+ */
+void dta_instrument_lea(INS ins)
+{
+}
+
+/**
+ * Callback of `mmap` syscall
+ */
+void post_mmap_hook(unsigned int tid, syscall_ctx_t *ctx)
+{
+  void *ret;
+  if ((ret = (void*)ctx->ret) == MAP_FAILED) // mmap failed
+    return;
+
+  tagmap_setb((uintptr_t)ret, INK_POINTER);
+}
+
+/**
+ * Callback of `munmap` syscall
+ */
+void post_munmap_hook(unsigned int tid, syscall_ctx_t *ctx)
+{
+  void *ret;
+  if ((ret = (void*)ctx->ret) == (void*)-1) // munmap failed
+    return;
+
+  void *addr = (void*)ctx->arg[SYSCALL_ARG0];
+  size_t length = (size_t)ctx->arg[SYSCALL_ARG1];
+
+  tagmap_clrn((uintptr_t)addr, length);
 }
 
 /**
