@@ -26,8 +26,12 @@ assert_mem_clean(ADDRINT paddr)
 ADDRINT PIN_FAST_ANALYSIS_CALL
 assert_reg_clean_ptr(unsigned int tid, size_t reg_base, size_t reg_index)
 {
-  tag_t tag_base = tagmap_getb_reg(tid, reg_base, 0);
-  tag_t tag_index = tagmap_getb_reg(tid, reg_index, 0);
+  int i;
+  tag_t tag_base = 0, tag_index = 0;
+  for(i = 0; i < 8; i++) {
+    tag_base  |= tagmap_getb_reg(tid, reg_base, i);
+    tag_index |= tagmap_getb_reg(tid, reg_index, i);
+  }
 
   if ((reg_index != GRP_NUM) && (reg_base != GRP_NUM)) {
     /* registers are used for both base and index */

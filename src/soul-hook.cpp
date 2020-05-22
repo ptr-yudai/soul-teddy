@@ -110,7 +110,7 @@ void dta_instrument_lea(INS ins)
   /* lea XXX, [rip+XXX] */
   // [TODO] support "lea XXX, [rip+XXX*Y+XXX]"
   ADDRINT src = INS_Address(ins) + INS_OperandMemoryDisplacement(ins, 1) + 7;
-  tagmap_setb((uintptr_t)src, INK_POINTER);
+  tagmap_setb((uintptr_t)MEM_ALIGN(src), INK_POINTER);
 }
 
 /**
