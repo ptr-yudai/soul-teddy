@@ -62,6 +62,7 @@ void __internal_entry_hook(IMG img, void *arg)
     RTN_InsertCall(rtn_entry, IPOINT_BEFORE, (AFUNPTR)entry_hook,
                    IARG_FAST_ANALYSIS_CALL,
                    IARG_THREAD_ID,
+                   IARG_REG_VALUE, REG_RSP,
                    IARG_END);
     RTN_Close(rtn_entry);
 
@@ -69,7 +70,6 @@ void __internal_entry_hook(IMG img, void *arg)
     /* invalid elf header? */
     std::cerr << "[-] Cannot hook entry point: 0x"
               << std::hex << addr_entry << std::endl;
-    std::exit(1);
   }
 }
 

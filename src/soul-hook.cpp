@@ -60,7 +60,7 @@ void dta_instrument_mov(INS ins)
       return; // special access
 
     REG reg_base = INS_OperandMemoryBaseReg(ins, 1);
-    REG reg_index = INS_OperandMemoryBaseReg(ins, 1);
+    REG reg_index = INS_OperandMemoryIndexReg(ins, 1);
 
     /* read from memory */
     INS_InsertIfCall(ins, IPOINT_BEFORE, (AFUNPTR)assert_reg_clean_ptr,
@@ -191,9 +191,41 @@ void post_close_hook(unsigned int tid, syscall_ctx_t *ctx)
 /**
  * Hook for entry point
  */
-void PIN_FAST_ANALYSIS_CALL entry_hook(unsigned int tid)
+void PIN_FAST_ANALYSIS_CALL entry_hook(unsigned int tid, ADDRINT rsp)
 {
+  ADDRINT ptr;
+  int i;
+  unsigned char c;
+
+  /* RSP is a valid pointer here */
   for(int i = 0; i < 8; i++) {
     tagmap_setb_reg(tid, REG_RSP, i, INK_POINTER);
+  }
+
+  /* argc is tainted */
+  tagmap_setb(MEM_ALIGN(rsp), INK_TAINT);
+
+  /* check for argv and envp */
+  for(i = 0; i < 2; i++) { // for argv and envp
+    do {
+      ptr = 0;
+      rsp += QWORD_LEN;
+      if (PIN_SafeCopy(&ptr, (void*)rsp, sizeof(ptr)) != QWORD_LEN) {
+        std::cerr << "[-] Cannot get argv/envp" << std::endl;
+      } else if (ptr) {
+        /* argv[n] is a valid pointer */
+        tagmap_setb(MEM_ALIGN(rsp), INK_POINTER);
+
+        /* every character of argv[n] is tainted */
+        do {
+          if (PIN_SafeCopy(&c, (void*)ptr, 1) != 1) {
+            std::cerr << "[-] Cannot extract string of argv/envp" << std::endl;
+          } else if (c) {
+            tagmap_setb(MEM_ALIGN(ptr), INK_TAINT); // taint!
+          }
+          ptr++;
+        } while(c);
+      }
+    } while(ptr);
   }
 }

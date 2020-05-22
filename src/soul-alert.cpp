@@ -28,8 +28,20 @@ assert_reg_clean_ptr(unsigned int tid, size_t reg_base, size_t reg_index)
 {
   tag_t tag_base = tagmap_getb_reg(tid, reg_base, 0);
   tag_t tag_index = tagmap_getb_reg(tid, reg_index, 0);
-  return TAINTED(tag_base | tag_index)
-    && !POINTER(tag_base | tag_index);
+
+  if ((reg_index != GRP_NUM) && (reg_base != GRP_NUM)) {
+    /* registers are used for both base and index */
+    return TAINTED(tag_base | tag_index)
+      && !POINTER(tag_base | tag_index);
+
+  } else if (reg_index == GRP_NUM) {
+    /* register is used only for base */
+    return TAINTED(tag_base) && !POINTER(tag_base);
+
+  } else {
+    /* register is used only for index */
+    return TAINTED(tag_index) && !POINTER(tag_index);
+  }
 }
 
 /**
@@ -42,4 +54,5 @@ void PIN_FAST_ANALYSIS_CALL alert_x(ADDRINT rip, ADDRINT dst)
 void PIN_FAST_ANALYSIS_CALL alert_rw(ADDRINT rip, ADDRINT addr)
 {
   std::cerr << std::hex << "[!] ALERT: @" << rip << " <=> @" << addr << std::endl;
+  std::exit(1);
 }
