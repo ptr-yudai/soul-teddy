@@ -122,7 +122,8 @@ void post_mmap_hook(unsigned int tid, syscall_ctx_t *ctx)
   if ((ret = (void*)ctx->ret) == MAP_FAILED) // mmap failed
     return;
 
-  tagmap_setb((uintptr_t)ret, INK_POINTER);
+  for(int i = 0; i < 8; i++)
+    tagmap_setb_reg(tid, REG_RAX, i, INK_POINTER);
 }
 
 /**

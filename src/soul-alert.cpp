@@ -54,6 +54,7 @@ assert_reg_clean_ptr(unsigned int tid, size_t reg_base, size_t reg_index)
 void PIN_FAST_ANALYSIS_CALL alert_x(ADDRINT rip, ADDRINT dst)
 {
   std::cerr << std::hex << "[!] ALERT: @" << rip << " --> @" << dst << std::endl;
+  std::exit(1);
 }
 void PIN_FAST_ANALYSIS_CALL alert_rw(ADDRINT rip, ADDRINT addr)
 {
