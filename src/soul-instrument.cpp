@@ -39,6 +39,7 @@ void sys_instrument()
   /* instrument P fountain */
   syscall_set_post(&syscall_desc[__NR_mmap], post_mmap_hook);
   syscall_set_post(&syscall_desc[__NR_munmap], post_munmap_hook);
+  syscall_set_post(&syscall_desc[__NR_brk], post_brk_hook);
 }
 
 /**

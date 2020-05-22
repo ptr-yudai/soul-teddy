@@ -63,6 +63,7 @@ void dta_instrument_mov(INS ins)
     REG reg_index = INS_OperandMemoryIndexReg(ins, 1);
 
     /* read from memory */
+    //std::cout << INS_Disassemble(ins) << std::endl;
     INS_InsertIfCall(ins, IPOINT_BEFORE, (AFUNPTR)assert_reg_clean_ptr,
                      IARG_FAST_ANALYSIS_CALL,
                      IARG_THREAD_ID,
@@ -142,6 +143,19 @@ void post_munmap_hook(unsigned int tid, syscall_ctx_t *ctx)
 }
 
 /**
+ * Callback of `brk` syscall
+ */
+void post_brk_hook(unsigned int tid, syscall_ctx_t *ctx)
+{
+  void *ret;
+  if ((ret = (void*)ctx->ret) == (void*)-1) // brk failed
+    return; // [TODO] does brk really return -1 on error?
+
+  for(int i = 0; i < 8; i++)
+    tagmap_setb_reg(tid, REG_RAX, i, INK_POINTER);
+}
+
+/**
  * Callback of `read` syscall
  */
 void post_read_hook(unsigned int tid, syscall_ctx_t *ctx)
@@ -159,9 +173,8 @@ void post_read_hook(unsigned int tid, syscall_ctx_t *ctx)
   void *buf = (void*)ctx->arg[SYSCALL_ARG1];
 
   // taint buffer on success
-  for(int i = 0; i < ret; i += INK_GRANULARITY) {
+  for(int i = 0; i < ret; i += INK_GRANULARITY)
     tagmap_setb(MEM_ALIGN((uintptr_t)buf + i), INK_TAINT);
-  }
 }
 
 /**
