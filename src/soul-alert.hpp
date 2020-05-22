@@ -8,4 +8,4 @@ void PIN_FAST_ANALYSIS_CALL alert_x(ADDRINT, ADDRINT);
 void PIN_FAST_ANALYSIS_CALL alert_rw(ADDRINT, ADDRINT);
 ADDRINT PIN_FAST_ANALYSIS_CALL assert_mem_clean_ptr(ADDRINT);
 ADDRINT PIN_FAST_ANALYSIS_CALL assert_mem_clean(ADDRINT);
-ADDRINT PIN_FAST_ANALYSIS_CALL assert_reg_clean_ptr(size_t, ADDRINT);
+ADDRINT PIN_FAST_ANALYSIS_CALL assert_reg_clean_ptr(unsigned int, size_t, size_t);

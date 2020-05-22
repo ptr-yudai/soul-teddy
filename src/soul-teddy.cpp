@@ -20,6 +20,9 @@ int main(int argc, char **argv)
     return 1;
   }
 
+  // Instrument entry point
+  entry_instrument();
+
   // Instrument instructions
   asm_instrument();
 

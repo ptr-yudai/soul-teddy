@@ -24,11 +24,12 @@ assert_mem_clean(ADDRINT paddr)
  * 64-bit register assertion (taint/dft-sink)
  */
 ADDRINT PIN_FAST_ANALYSIS_CALL
-assert_reg_clean_ptr(size_t reg_id, ADDRINT addr)
+assert_reg_clean_ptr(unsigned int tid, size_t reg_base, size_t reg_index)
 {
-  // [TODO] check thread info
-  return TAINTED(tagmap_getb(MEM_ALIGN(addr)))
-    && !POINTER(tagmap_getb(MEM_ALIGN(addr)));
+  tag_t tag_base = tagmap_getb_reg(tid, reg_base, 0);
+  tag_t tag_index = tagmap_getb_reg(tid, reg_index, 0);
+  return TAINTED(tag_base | tag_index)
+    && !POINTER(tag_base | tag_index);
 }
 
 /**

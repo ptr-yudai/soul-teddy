@@ -24,3 +24,5 @@ void post_munmap_hook(unsigned int, syscall_ctx_t*);
 void post_open_hook(unsigned int, syscall_ctx_t*);
 void post_close_hook(unsigned int, syscall_ctx_t*);
 void post_read_hook(unsigned int, syscall_ctx_t*);
+
+void PIN_FAST_ANALYSIS_CALL entry_hook(unsigned int);

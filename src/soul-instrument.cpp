@@ -40,3 +40,40 @@ void sys_instrument()
   syscall_set_post(&syscall_desc[__NR_mmap], post_mmap_hook);
   syscall_set_post(&syscall_desc[__NR_munmap], post_munmap_hook);
 }
+
+/**
+ * Instrument entry point
+ */
+void __internal_entry_hook(IMG img, void *arg)
+{
+  if (!IMG_Valid(img))
+    return; // not a valid image
+
+  if (!IMG_IsMainExecutable(img))
+    return; // not the main executable
+
+  ADDRINT addr_entry = IMG_EntryAddress(img);
+  RTN rtn_entry = RTN_FindByAddress(addr_entry);
+
+  if (RTN_Valid(rtn_entry)) {
+
+    /* instrument entry point */
+    RTN_Open(rtn_entry);
+    RTN_InsertCall(rtn_entry, IPOINT_BEFORE, (AFUNPTR)entry_hook,
+                   IARG_FAST_ANALYSIS_CALL,
+                   IARG_THREAD_ID,
+                   IARG_END);
+    RTN_Close(rtn_entry);
+
+  } else {
+    /* invalid elf header? */
+    std::cerr << "[-] Cannot hook entry point: 0x"
+              << std::hex << addr_entry << std::endl;
+    std::exit(1);
+  }
+}
+
+void entry_instrument()
+{
+  IMG_AddInstrumentFunction(__internal_entry_hook, NULL);
+}

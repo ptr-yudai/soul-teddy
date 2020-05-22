@@ -56,10 +56,18 @@ void dta_instrument_mov(INS ins)
 {
   if (INS_IsMemoryRead(ins)) {
 
+    if (INS_OperandIsFixedMemop(ins, 1))
+      return; // special access
+
+    REG reg_base = INS_OperandMemoryBaseReg(ins, 1);
+    REG reg_index = INS_OperandMemoryBaseReg(ins, 1);
+
     /* read from memory */
-    INS_InsertIfCall(ins, IPOINT_BEFORE, (AFUNPTR)assert_mem_clean_ptr,
+    INS_InsertIfCall(ins, IPOINT_BEFORE, (AFUNPTR)assert_reg_clean_ptr,
                      IARG_FAST_ANALYSIS_CALL,
-                     IARG_MEMORYREAD_EA,
+                     IARG_THREAD_ID,
+                     IARG_UINT32, REG_INDX(reg_base),
+                     IARG_UINT32, REG_INDX(reg_index),
                      IARG_END);
     INS_InsertThenCall(ins, IPOINT_BEFORE, (AFUNPTR)alert_rw,
                        IARG_FAST_ANALYSIS_CALL,
@@ -69,10 +77,18 @@ void dta_instrument_mov(INS ins)
 
   } else if (INS_IsMemoryWrite(ins)) {
 
+    if (INS_OperandIsFixedMemop(ins, 0))
+      return; // special access
+
+    REG reg_base = INS_OperandMemoryBaseReg(ins, 0);
+    REG reg_index = INS_OperandMemoryBaseReg(ins, 0);
+
     /* write to memory */
-    INS_InsertIfCall(ins, IPOINT_BEFORE, (AFUNPTR)assert_mem_clean_ptr,
+    INS_InsertIfCall(ins, IPOINT_BEFORE, (AFUNPTR)assert_reg_clean_ptr,
                      IARG_FAST_ANALYSIS_CALL,
-                     IARG_MEMORYWRITE_EA,
+                     IARG_THREAD_ID,
+                     IARG_UINT32, REG_INDX(reg_base),
+                     IARG_UINT32, REG_INDX(reg_index),
                      IARG_END);
     INS_InsertThenCall(ins, IPOINT_BEFORE, (AFUNPTR)alert_rw,
                        IARG_FAST_ANALYSIS_CALL,
@@ -88,6 +104,13 @@ void dta_instrument_mov(INS ins)
  */
 void dta_instrument_lea(INS ins)
 {
+  if (INS_OperandMemoryBaseReg(ins, 1) != REG_RIP)
+    return;
+
+  /* lea XXX, [rip+XXX] */
+  // [TODO] support "lea XXX, [rip+XXX*Y+XXX]"
+  ADDRINT src = INS_Address(ins) + INS_OperandMemoryDisplacement(ins, 1) + 7;
+  tagmap_setb((uintptr_t)src, INK_POINTER);
 }
 
 /**
@@ -163,4 +186,14 @@ void post_close_hook(unsigned int tid, syscall_ctx_t *ctx)
 
   int fd = (int)ctx->arg[SYSCALL_ARG0];
   open_fds.remove(fd);
+}
+
+/**
+ * Hook for entry point
+ */
+void PIN_FAST_ANALYSIS_CALL entry_hook(unsigned int tid)
+{
+  for(int i = 0; i < 8; i++) {
+    tagmap_setb_reg(tid, REG_RSP, i, INK_POINTER);
+  }
 }
