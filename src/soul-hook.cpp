@@ -63,7 +63,6 @@ void dta_instrument_mov(INS ins)
     REG reg_index = INS_OperandMemoryIndexReg(ins, 1);
 
     /* read from memory */
-    //std::cout << INS_Disassemble(ins) << std::endl;
     INS_InsertIfCall(ins, IPOINT_BEFORE, (AFUNPTR)assert_reg_clean_ptr,
                      IARG_FAST_ANALYSIS_CALL,
                      IARG_THREAD_ID,
@@ -122,6 +121,22 @@ void post_mmap_hook(unsigned int tid, syscall_ctx_t *ctx)
   void *ret;
   if ((ret = (void*)ctx->ret) == MAP_FAILED) // mmap failed
     return;
+
+  for(int i = 0; i < 8; i++)
+    tagmap_setb_reg(tid, REG_RAX, i, INK_POINTER);
+}
+
+/**
+ * Callback of `mremap` syscall
+ */
+void post_mremap_hook(unsigned int tid, syscall_ctx_t *ctx)
+{
+  void *ret;
+  if ((ret = (void*)ctx->ret) == MAP_FAILED) // mremap failed
+    return;
+
+  ADDRINT old = (ADDRINT)ctx->arg[SYSCALL_ARG0];
+  tagmap_clrn((uintptr_t)MEM_ALIGN(old), INK_POINTER);
 
   for(int i = 0; i < 8; i++)
     tagmap_setb_reg(tid, REG_RAX, i, INK_POINTER);
@@ -207,7 +222,7 @@ void post_close_hook(unsigned int tid, syscall_ctx_t *ctx)
  */
 void PIN_FAST_ANALYSIS_CALL entry_hook(unsigned int tid, ADDRINT rsp)
 {
-  ADDRINT ptr;
+  ADDRINT ptr, argc;
   int i;
   unsigned char c;
 
@@ -217,6 +232,13 @@ void PIN_FAST_ANALYSIS_CALL entry_hook(unsigned int tid, ADDRINT rsp)
   }
 
   /* argc is tainted */
+  if (PIN_SafeCopy(&argc, (void*)rsp, sizeof(argc)) != QWORD_LEN) {
+    std::cerr << "[-] Cannot get argc" << std::endl;
+    return;
+  } else if (argc > 0xffffffff) {
+    std::cerr << "[-] Cannot get arguments" << std::endl;
+    return;
+  }
   tagmap_setb(MEM_ALIGN(rsp), INK_TAINT);
 
   /* check for argv and envp */
@@ -226,6 +248,7 @@ void PIN_FAST_ANALYSIS_CALL entry_hook(unsigned int tid, ADDRINT rsp)
       rsp += QWORD_LEN;
       if (PIN_SafeCopy(&ptr, (void*)rsp, sizeof(ptr)) != QWORD_LEN) {
         std::cerr << "[-] Cannot get argv/envp" << std::endl;
+        return;
       } else if (ptr) {
         /* argv[n] is a valid pointer */
         tagmap_setb(MEM_ALIGN(rsp), INK_POINTER);
@@ -234,6 +257,7 @@ void PIN_FAST_ANALYSIS_CALL entry_hook(unsigned int tid, ADDRINT rsp)
         do {
           if (PIN_SafeCopy(&c, (void*)ptr, 1) != 1) {
             std::cerr << "[-] Cannot extract string of argv/envp" << std::endl;
+            return;
           } else if (c) {
             tagmap_setb(MEM_ALIGN(ptr), INK_TAINT); // taint!
           }

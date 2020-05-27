@@ -15,8 +15,8 @@ void asm_instrument()
                dta_instrument_jmp_call);
 
   /* instrument data transfer */
-  ins_set_post(&ins_desc[XED_ICLASS_MOV],
-               dta_instrument_mov);
+  //ins_set_post(&ins_desc[XED_ICLASS_MOV],
+  //             dta_instrument_mov);
 
   /* instrument P fountain */
   ins_set_pre(&ins_desc[XED_ICLASS_LEA],
@@ -38,6 +38,7 @@ void sys_instrument()
 
   /* instrument P fountain */
   syscall_set_post(&syscall_desc[__NR_mmap], post_mmap_hook);
+  syscall_set_post(&syscall_desc[__NR_mremap], post_mremap_hook);
   syscall_set_post(&syscall_desc[__NR_munmap], post_munmap_hook);
   syscall_set_post(&syscall_desc[__NR_brk], post_brk_hook);
 }
