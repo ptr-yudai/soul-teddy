@@ -26,12 +26,16 @@ assert_mem_clean(ADDRINT paddr)
 ADDRINT PIN_FAST_ANALYSIS_CALL
 assert_reg_clean_ptr(unsigned int tid, size_t reg_base, size_t reg_index)
 {
-  int i;
+  //int i;
   tag_t tag_base = 0, tag_index = 0;
+  /*
   for(i = 0; i < 8; i++) {
     tag_base  |= tagmap_getb_reg(tid, reg_base, i);
     tag_index |= tagmap_getb_reg(tid, reg_index, i);
   }
+  */
+  tag_base = tagmap_getb_reg(tid, reg_base, 0);
+  tag_index = tagmap_getb_reg(tid, reg_index, 0);
 
   if ((reg_index != GRP_NUM) && (reg_base != GRP_NUM)) {
     /* registers are used for both base and index */
@@ -46,6 +50,19 @@ assert_reg_clean_ptr(unsigned int tid, size_t reg_base, size_t reg_index)
     /* register is used only for index */
     return TAINTED(tag_index) && !POINTER(tag_index);
   }
+  //  if ((reg_base != GRP_NUM) && (reg_index != GRP_NUM)) {
+  //    /* registers are used for both base and index */
+  //    return (REG_TAINTED(tid, reg_base) | REG_TAINTED(tid, reg_index))
+  //      && !(REG_POINTER(tid, reg_base) | REG_POINTER(tid, reg_index));
+  //
+  //  } else if (reg_index == GRP_NUM) {
+  //    /* register is used only for base */
+  //    return REG_TAINTED(tid, reg_base) && !REG_POINTER(tid, reg_base);
+  //
+  //  } else {
+  //    /* register is used only for index */
+  //    return REG_TAINTED(tid, reg_index) && !REG_POINTER(tid, reg_index);
+  //  }
 }
 
 /**
