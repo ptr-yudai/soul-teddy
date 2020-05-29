@@ -8,6 +8,12 @@ std::vector<ADDRINT> rel_list;
 std::list<int> open_fds;
 REG thread_ctx_ptr;
 
+void PIN_FAST_ANALYSIS_CALL clear_stack_top(ADDRINT rsp)
+{
+  tagmap_clrn((uintptr_t)MEM_ALIGN(rsp), 1);
+  tagmap_setb((uintptr_t)MEM_ALIGN(rsp), INK_POINTER);
+}
+
 /**
  * Instrument jmp/call
  */
@@ -15,6 +21,14 @@ void dta_instrument_jmp_call(INS ins)
 {
   if (INS_IsDirectBranch(ins) || INS_IsDirectCall(ins))
     return; // branch address is fixed (impossible to be tainted)
+
+  if (INS_IsCall(ins)) {
+    /* stack top is a valid pointer */
+    INS_InsertCall(ins, IPOINT_TAKEN_BRANCH, (AFUNPTR)clear_stack_top,
+                   IARG_FAST_ANALYSIS_CALL,
+                   IARG_REG_VALUE, REG_RSP,
+                   IARG_END);
+  }
 
   if (INS_OperandIsReg(ins, 0))
     return; // we'd already know if it's tainted on the previous `mov`
@@ -39,7 +53,7 @@ void dta_instrument_jmp_call(INS ins)
  */
 void dta_instrument_ret(INS ins)
 {
-  INS_InsertIfCall(ins, IPOINT_BEFORE, (AFUNPTR)assert_mem_clean_ptr,
+  INS_InsertIfCall(ins, IPOINT_BEFORE, (AFUNPTR)assert_mem_clean,
                    IARG_FAST_ANALYSIS_CALL,
                    IARG_MEMORYREAD_EA,
                    IARG_END);

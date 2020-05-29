@@ -17,7 +17,9 @@ assert_mem_clean_ptr(ADDRINT paddr)
 ADDRINT PIN_FAST_ANALYSIS_CALL
 assert_mem_clean(ADDRINT paddr)
 {
-  return TAINTED(tagmap_getb(MEM_ALIGN(paddr)));
+  //std::cout << std::hex << paddr << ": " << tagmap_getb(MEM_ALIGN(paddr)) << std::endl;
+  return TAINTED(tagmap_getb(MEM_ALIGN(paddr)))
+    && !POINTER(tagmap_getb(MEM_ALIGN(paddr)));
 }
 
 /**
@@ -46,11 +48,17 @@ assert_reg_clean_ptr(unsigned int tid, size_t reg_base, size_t reg_index)
  */
 void PIN_FAST_ANALYSIS_CALL alert_x(ADDRINT rip, ADDRINT dst)
 {
-  std::cerr << std::hex << "[!] ALERT: @" << rip << " --> @" << dst << std::endl;
+  std::cerr << "****************************" << std::endl;
+  std::cerr << "* SUSPICIOUS CALL DETECTED *" << std::endl;
+  std::cerr << "****************************" << std::endl;
+  std::cerr << std::hex << "[!] ALERT@" << rip << "; CALLING @" << dst << std::endl;
   std::exit(1);
 }
 void PIN_FAST_ANALYSIS_CALL alert_rw(ADDRINT rip, ADDRINT addr)
 {
-  std::cerr << std::hex << "[!] ALERT: @" << rip << " <=> @" << addr << std::endl;
+  std::cerr << "*********************************" << std::endl;
+  std::cerr << "* SUSPICIOUS REFERENCE DETECTED *" << std::endl;
+  std::cerr << "*********************************" << std::endl;
+  std::cerr << std::hex << "[!] ALERT@" << rip << "; REFERENCING @" << addr << std::endl;
   std::exit(1);
 }

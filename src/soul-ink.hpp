@@ -1,3 +1,6 @@
+#ifndef __INK_MACHINE__
+#define __INK_MACHINE__
+
 /* Granularity is the size of pointer */
 #define INK_GRANULARITY 8
 #define MEM_ALIGN(addr) ((addr) & ~(INK_GRANULARITY - 1))
@@ -12,7 +15,7 @@
 #define POINTER(tag) (((tag) & INK_POINTER) == INK_POINTER)
 
 /* take majority */
-extern bool REG_TAINTED(int tid, int reg) {
+static bool REG_TAINTED(int tid, int reg) {
   int i, cnt;
   for(i = 0; i < 8; i++) {
     if (TAINTED(tagmap_getb_reg(tid, reg, i))) cnt++;
@@ -20,7 +23,7 @@ extern bool REG_TAINTED(int tid, int reg) {
   }
   return false;
 }
-extern bool REG_POINTER(int tid, int reg) {
+static bool REG_POINTER(int tid, int reg) {
   int i, cnt;
   for(i = 0; i < 8; i++) {
     if (POINTER(tagmap_getb_reg(tid, reg, i))) cnt++;
@@ -29,3 +32,4 @@ extern bool REG_POINTER(int tid, int reg) {
   return false;
 }
 
+#endif
