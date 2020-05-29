@@ -29,6 +29,9 @@ int main(int argc, char **argv)
   // Instrument system calls
   sys_instrument();
 
+  // Set P-bit for relocation entries
+  taint_relocation();
+
   // Run target binary
   PIN_StartProgram();
 

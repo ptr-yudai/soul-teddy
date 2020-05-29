@@ -4,6 +4,7 @@
 #include "soul-ink.hpp"
 #include "soul-alert.hpp"
 
+std::vector<ADDRINT> rel_list;
 std::list<int> open_fds;
 REG thread_ctx_ptr;
 
@@ -109,8 +110,12 @@ void dta_instrument_lea(INS ins)
 
   /* lea XXX, [rip+XXX] */
   // [TODO] support "lea XXX, [rip+XXX*Y+XXX]"
+  REG dst = INS_OperandReg(ins, 0);
   ADDRINT src = INS_Address(ins) + INS_OperandMemoryDisplacement(ins, 1) + 7;
   tagmap_setb((uintptr_t)MEM_ALIGN(src), INK_POINTER);
+
+  for(int i = 0; i < 8; i++)
+    tagmap_setb_reg(PIN_ThreadId(), dst, i, INK_POINTER);
 }
 
 /**
@@ -124,6 +129,8 @@ void post_mmap_hook(unsigned int tid, syscall_ctx_t *ctx)
 
   for(int i = 0; i < 8; i++)
     tagmap_setb_reg(tid, REG_RAX, i, INK_POINTER);
+
+  // [TODO] taint buffer if fd is not -1
 }
 
 /**
@@ -229,6 +236,14 @@ void PIN_FAST_ANALYSIS_CALL entry_hook(unsigned int tid, ADDRINT rsp)
   /* RSP is a valid pointer here */
   for(int i = 0; i < 8; i++) {
     tagmap_setb_reg(tid, REG_RSP, i, INK_POINTER);
+  }
+
+  /* relocated address is a valid pointer */
+  for(ADDRINT relptr: rel_list) {
+    if (PIN_SafeCopy(&ptr, (void*)relptr, sizeof(ptr)) == QWORD_LEN) {
+      if (ptr)
+        tagmap_setb(MEM_ALIGN(relptr), INK_POINTER);
+    }
   }
 
   /* argc is tainted */

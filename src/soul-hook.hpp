@@ -11,6 +11,7 @@
 
 #define QWORD_LEN 8
 
+extern std::vector<ADDRINT> rel_list;
 extern ins_desc_t ins_desc[XED_ICLASS_LAST];
 extern syscall_desc_t syscall_desc[SYSCALL_MAX];
 

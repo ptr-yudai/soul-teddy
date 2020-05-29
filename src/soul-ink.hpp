@@ -12,8 +12,7 @@
 #define POINTER(tag) (((tag) & INK_POINTER) == INK_POINTER)
 
 /* take majority */
-/*
-static bool REG_TAINTED(int tid, int reg) {
+extern bool REG_TAINTED(int tid, int reg) {
   int i, cnt;
   for(i = 0; i < 8; i++) {
     if (TAINTED(tagmap_getb_reg(tid, reg, i))) cnt++;
@@ -21,7 +20,7 @@ static bool REG_TAINTED(int tid, int reg) {
   }
   return false;
 }
-static bool REG_POINTER(int tid, int reg) {
+extern bool REG_POINTER(int tid, int reg) {
   int i, cnt;
   for(i = 0; i < 8; i++) {
     if (POINTER(tagmap_getb_reg(tid, reg, i))) cnt++;
@@ -29,4 +28,4 @@ static bool REG_POINTER(int tid, int reg) {
   }
   return false;
 }
-*/
+

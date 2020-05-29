@@ -15,8 +15,8 @@ void asm_instrument()
                dta_instrument_jmp_call);
 
   /* instrument data transfer */
-  //ins_set_post(&ins_desc[XED_ICLASS_MOV],
-  //             dta_instrument_mov);
+  ins_set_post(&ins_desc[XED_ICLASS_MOV],
+               dta_instrument_mov);
 
   /* instrument P fountain */
   ins_set_pre(&ins_desc[XED_ICLASS_LEA],
@@ -78,4 +78,51 @@ void __internal_entry_hook(IMG img, void *arg)
 void entry_instrument()
 {
   IMG_AddInstrumentFunction(__internal_entry_hook, NULL);
+}
+
+
+/**
+ * Set P-bit to the relocation entries
+ */
+void __internal_taint_relocation(IMG img, void *arg)
+{
+  if (!IMG_Valid(img))
+    return; // not a valid image
+
+  /* get proc base if pie is enabled */
+  ADDRINT pie_base;
+  if (IMG_Type(img) == IMG_TYPE_SHAREDLIB) {
+    pie_base = IMG_LowAddress(img);
+  } else {
+    pie_base = 0;
+  }
+
+  /* check for relocation entries */
+  for(SEC sec = IMG_SecHead(img); SEC_Valid(sec); sec = SEC_Next(sec)) {
+    if (!SEC_Valid(sec))
+      continue;
+
+    SEC_TYPE type = SEC_Type(sec);
+    if (type == SEC_TYPE_REGREL) {
+
+      /* Relocations */
+      Elf64_Rela *entry = (Elf64_Rela*)SEC_Data(sec);
+      unsigned int entry_size = SEC_Size(sec);
+
+      for(unsigned int i = 0; i < entry_size / sizeof(Elf64_Rela); i++) {
+        rel_list.push_back(pie_base + entry->r_offset);
+        entry = (Elf64_Rela*)((unsigned long)entry + sizeof(Elf64_Rela));
+      }
+
+    } else if (type == SEC_TYPE_DYNREL) {
+
+      /* Dynamic relocations */
+      std::cout << "[-] What's this?" << std::endl;
+
+    }
+  }
+}
+void taint_relocation()
+{
+  IMG_AddInstrumentFunction(__internal_taint_relocation, NULL);
 }
