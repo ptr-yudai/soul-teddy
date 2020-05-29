@@ -17,7 +17,6 @@ assert_mem_clean_ptr(ADDRINT paddr)
 ADDRINT PIN_FAST_ANALYSIS_CALL
 assert_mem_clean(ADDRINT paddr)
 {
-  //std::cout << std::hex << paddr << ": " << tagmap_getb(MEM_ALIGN(paddr)) << std::endl;
   return TAINTED(tagmap_getb(MEM_ALIGN(paddr)))
     && !POINTER(tagmap_getb(MEM_ALIGN(paddr)));
 }
@@ -28,6 +27,12 @@ assert_mem_clean(ADDRINT paddr)
 ADDRINT PIN_FAST_ANALYSIS_CALL
 assert_reg_clean_ptr(unsigned int tid, size_t reg_base, size_t reg_index)
 {
+  /*
+  for(int i = 0; i < 8; i++) {
+    std::cout << tagmap_getb_reg(tid, reg_base, 7-i);
+  }
+  std::cout << std::endl;
+  */
   if ((reg_base != GRP_NUM) && (reg_index != GRP_NUM)) {
     /* registers are used for both base and index */
     return (REG_TAINTED(tid, reg_base) | REG_TAINTED(tid, reg_index))
